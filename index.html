@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firebase Login System</title>
+<link rel="stylesheet" href="harries.css">
+</head>
+
+<body>
+
+<div class="container" id="app">
+
+<div id="server-warning" style="display:none; margin-bottom:12px; padding:12px; border-radius:8px; background:#fee2e2; color:#991b1b; text-align:center; border:1px solid #fca5a5;">
+  Please open this page using Live Server or another local HTTP server (for example, Live Server or <code>python -m http.server</code>). Firebase Authentication does not work from file://.
+</div>
+
+<div id="error-message" style="display:none; margin-bottom:12px; padding:12px; border-radius:8px; background:#fef2f2; color:#991b1b; text-align:center; border:1px solid #fca5a5; white-space:pre-wrap;"></div>
+
+<h2>Firebase Authentication</h2>
+
+<input
+type="email"
+id="email"
+placeholder="Enter Email"
+required>
+
+<input
+type="password"
+id="password"
+placeholder="Enter Password"
+required>
+
+<button id="signup">Create Account</button>
+
+<button id="login">Login</button>
+
+<button id="logout" style="display:none;">Logout</button>
+
+<p id="user">Not Logged In</p>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+signOut,
+onAuthStateChanged
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+// ======================================
+// FIREBASE CONFIG
+// ======================================
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyBLwqZ4z2PVsV0N1F9LnsKynPSJV1wcV_U",
+
+authDomain: "log-in-log-o.firebaseapp.com",
+
+projectId: "log-in-log-o",
+
+storageBucket: "log-in-log-o.appspot.com",
+
+messagingSenderId: "83643692358",
+
+appId: "1:83643692358:web:35eaa5170d3cf5bcb76147",
+
+measurementId: "G-X7L88C2RVZ"
+
+};
+
+// ======================================
+
+function showFirebaseStartError(message) {
+  const errorMessage = document.getElementById('error-message');
+  if (errorMessage) {
+    errorMessage.textContent = 'Firebase startup error: ' + message;
+    errorMessage.style.display = 'block';
+  }
+  alert('Firebase startup error: ' + message + '\nPlease open this page with Live Server or a local server.');
+  console.error('Firebase startup error:', message);
+}
+
+let auth;
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  console.log('Firebase initialized:', app.options);
+} catch (error) {
+  showFirebaseStartError(error.message);
+}
+
+if (!auth) {
+  showFirebaseStartError('Firebase Auth could not be initialized.');
+}
+
+// Wait for DOM elements to be ready
+window.addEventListener('DOMContentLoaded', () => {
+
+const serverWarning = document.getElementById('server-warning');
+
+if (window.location.protocol === 'file:') {
+  serverWarning.style.display = 'block';
+  return;
+}
+
+serverWarning.style.display = 'none';
+
+const email=document.getElementById("email");
+const password=document.getElementById("password");
+
+const signup=document.getElementById("signup");
+const login=document.getElementById("login");
+const logout=document.getElementById("logout");
+
+const user=document.getElementById("user");
+
+
+// CREATE ACCOUNT
+
+signup.addEventListener("click",()=>{
+
+if(!email.value || !password.value){
+alert("Please fill in all fields");
+return;
+}
+
+createUserWithEmailAndPassword(
+
+auth,
+email.value,
+password.value
+
+)
+
+.then((credential)=>{
+
+alert("Account Created Successfully!");
+email.value="";
+password.value="";
+
+})
+
+.catch((error)=>{
+
+alert(error.message);
+
+});
+
+});
+
+
+// LOGIN
+
+login.addEventListener("click",()=>{
+
+if(!email.value || !password.value){
+alert("Please fill in all fields");
+return;
+}
+
+signInWithEmailAndPassword(
+
+auth,
+email.value,
+password.value
+
+)
+
+.then(()=>{
+
+alert("Login Successful!");
+password.value="";
+
+})
+
+.catch((error)=>{
+
+alert(error.message);
+
+});
+
+});
+
+
+// LOGOUT
+
+logout.addEventListener("click",()=>{
+
+signOut(auth)
+
+.then(()=>{
+
+alert("Logged Out");
+
+})
+
+.catch((error)=>{
+
+alert(error.message);
+
+});
+
+});
+
+
+// CHECK USER
+
+onAuthStateChanged(auth,(currentUser)=>{
+
+if(currentUser){
+
+user.innerHTML="✓ Logged In As:<br>"+currentUser.email;
+email.disabled=true;
+password.disabled=true;
+signup.disabled=true;
+login.disabled=true;
+logout.style.display="block";
+
+}else{
+
+user.innerHTML="✗ Not Logged In";
+email.disabled=false;
+password.disabled=false;
+signup.disabled=false;
+login.disabled=false;
+logout.style.display="none";
+email.value="";
+password.value="";
+
+}
+
+});
+
+});
+
+</script>
+
+</body>
+</html>
